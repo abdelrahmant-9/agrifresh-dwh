@@ -1,0 +1,7 @@
+region_id,region_code,region_name,country,currency_code
+1,EG-CAI,Greater Cairo,Egypt,EGP
+2,EG-ALX,Alexandria & Delta,Egypt,EGP
+3,EG-UPP,Upper Egypt,Egypt,EGP
+4,SA-RIY,Riyadh,Saudi Arabia,SAR
+5,SA-JED,Jeddah & Western,Saudi Arabia,SAR
+6,AE-DXB,Dubai & Northern Emirates,UAE,AED

@@ -1,0 +1,26 @@
+name: agrifresh
+version: "1.0.0"
+config-version: 2
+
+profile: agrifresh
+
+model-paths: ["models"]
+macro-paths: ["macros"]
+test-paths: ["tests"]
+target-path: "target"
+clean-targets: ["target", "dbt_packages"]
+
+models:
+  agrifresh:
+    bronze:
+      +schema: bronze
+      +materialized: view
+      +tags: ["bronze"]
+    silver:
+      +schema: silver
+      +materialized: table
+      +tags: ["silver"]
+    gold:
+      +schema: gold
+      +materialized: table
+      +tags: ["gold"]

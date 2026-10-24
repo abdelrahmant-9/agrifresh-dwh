@@ -1,0 +1,19 @@
+# dbt picks this file up when run from the project root.
+# Credentials come from environment variables; nothing secret is stored here.
+# Auth is key-pair: the public key is registered on the user with ALTER USER ... SET RSA_PUBLIC_KEY.
+#   export SNOWFLAKE_ACCOUNT=xy12345.eu-central-1   # account identifier
+#   export SNOWFLAKE_USER=...
+#   export SNOWFLAKE_PRIVATE_KEY_PATH=~/.snowflake/agrifresh_rsa_key.p8   # optional, this is the default
+agrifresh:
+  target: dev
+  outputs:
+    dev:
+      type: snowflake
+      account: "{{ env_var('SNOWFLAKE_ACCOUNT') }}"
+      user: "{{ env_var('SNOWFLAKE_USER') }}"
+      private_key_path: "{{ env_var('SNOWFLAKE_PRIVATE_KEY_PATH', env_var('HOME') ~ '/.snowflake/agrifresh_rsa_key.p8') }}"
+      role: TRANSFORMER
+      warehouse: AGRI_WH
+      database: AGRIFRESH
+      schema: SILVER
+      threads: 4

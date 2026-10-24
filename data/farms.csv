@@ -1,0 +1,21 @@
+farm_id,farm_code,farm_name,region_id,farm_size_feddan,certification,contract_start_date,contact_email
+1,FRM001,Nile Valley Farm,3,2036,GlobalG.A.P.,2020-04-03,ops@nilevalley.com
+2,FRM002,Wadi El Natrun Farm,2,1584,GlobalG.A.P.,2023-09-16,ops@wadielnatrun.com
+3,FRM003,Fayoum Green Farm,1,196,GlobalG.A.P.,2021-04-11,ops@fayoumgreen.com
+4,FRM004,Minya Harvest Farm,3,1784,GlobalG.A.P.,2024-05-02,ops@minyaharvest.com
+5,FRM005,Beheira Fields Farm,2,1893,Organic EU,2021-08-15,
+6,FRM006,Al-Kharj Agro Farm,4,538,GlobalG.A.P.,2020-06-12,ops@alkharjagro.com
+7,FRM007,Qassim Palms Farm,4,2009,GlobalG.A.P.,2021-04-21,ops@qassimpalms.com
+8,FRM008,Al-Ahsa Dates Farm,4,1713,Organic EU,2020-07-25,ops@alahsadates.com
+9,FRM009,Tabuk Highlands Farm,5,2435,GlobalG.A.P.,2022-02-17,ops@tabukhighlands.com
+10,FRM010,Hail Growers Farm,4,690,GlobalG.A.P.,2021-07-23,ops@hailgrowers.com
+11,FRM011,Al Ain Organics Farm,6,1852,GlobalG.A.P.,2022-07-17,ops@alainorganics.com
+12,FRM012,Ras Al Khaimah Farms Farm,6,2019,GlobalG.A.P.,2023-07-25,ops@rasalkhaimahfarms.com
+13,FRM013,Ismailia Citrus Farm,2,2248,None,2022-01-17,
+14,FRM014,Sharqia Orchards Farm,2,1488,None,2020-11-29,ops@sharqiaorchards.com
+15,FRM015,Luxor Sun Farms Farm,3,1684,GlobalG.A.P.,2022-01-28,ops@luxorsunfarms.com
+16,FRM016,Sinai Desert Agri Farm,1,312,GlobalG.A.P.,2021-12-28,ops@sinaidesertagri.com
+17,FRM017,Jazan Tropicals Farm,5,1837,None,2021-03-05,ops@jazantropicals.com
+18,FRM018,Medina Dates Co Farm,5,2241,None,2023-10-04,ops@medinadatesco.com
+19,FRM019,Sadat City Greenhouses Farm,1,2443,GlobalG.A.P.,2021-06-30,ops@sadatcitygreenhouses.com
+20,FRM020,Toshka Agro Farm,3,673,GlobalG.A.P.,2023-12-08,ops@toshkaagro.com

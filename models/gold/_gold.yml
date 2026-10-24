@@ -1,0 +1,112 @@
+version: 2
+
+models:
+  # ------------------------------------------------------------------ dimensions
+  - name: dim_date
+    description: Calendar dimension, one row per day 2023-01-01 .. 2027-12-31. Weekend = Fri + Sat.
+    columns:
+      - name: date_key
+        description: YYYYMMDD integer.
+        data_tests: [unique, not_null]
+      - name: date_day
+        data_tests: [unique, not_null]
+
+  - name: dim_customer
+    description: Current customers (SCD1) with region and account manager.
+    columns:
+      - name: customer_key
+        data_tests: [unique, not_null]
+      - name: customer_id
+        data_tests: [unique, not_null]
+      - name: region_name
+        data_tests: [not_null]
+      - name: segment
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ["Supermarket", "Hypermarket", "Restaurant", "Hotel", "Online Grocer", "Wholesaler"]
+
+  - name: dim_product
+    description: Products with category and parent category.
+    columns:
+      - name: product_key
+        data_tests: [unique, not_null]
+      - name: product_id
+        data_tests: [unique, not_null]
+      - name: category_name
+        data_tests: [not_null]
+      - name: parent_category_name
+        data_tests: [not_null]
+
+  # ------------------------------------------------------------------ facts
+  - name: fact_sales
+    description: Sales at order-line grain. USD measures plus local-currency net via monthly FX.
+    columns:
+      - name: order_line_id
+        data_tests: [unique, not_null]
+      - name: order_date_key
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_date')
+                field: date_key
+      - name: requested_delivery_date_key
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('dim_date')
+                field: date_key
+      - name: customer_key
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_customer')
+                field: customer_key
+      - name: product_key
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_product')
+                field: product_key
+      - name: net_amount_usd
+        data_tests: [not_null]
+      - name: cost_amount_usd
+        data_tests: [not_null]
+      - name: fx_rate_to_usd
+        description: NULL would mean an order month without an FX rate.
+        data_tests: [not_null]
+
+  - name: fact_purchases
+    description: Farm purchases at purchase-order grain.
+    data_tests:
+      - dbt_utils.expression_is_true:
+          arguments:
+            expression: "abs(received_cost_usd - accepted_cost_usd - rejected_cost_usd) < 0.01"
+    columns:
+      - name: purchase_order_id
+        data_tests: [unique, not_null]
+      - name: received_date_key
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_date')
+                field: date_key
+      - name: harvest_date_key
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('dim_date')
+                field: date_key
+      - name: product_key
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_product')
+                field: product_key
+      - name: farm_name
+        data_tests: [not_null]

@@ -1,0 +1,81 @@
+version: 2
+
+models:
+  - name: brz_regions
+    description: "Bronze copy of raw.regions. Sales/operating regions across Egypt, KSA and UAE."
+    columns:
+      - name: region_id
+        data_tests:
+          - not_null
+  - name: brz_product_categories
+    description: "Bronze copy of raw.product_categories. Product category hierarchy (parent_category_id self-reference)."
+    columns:
+      - name: category_id
+        data_tests:
+          - not_null
+  - name: brz_warehouses
+    description: "Bronze copy of raw.warehouses. Distribution centres."
+    columns:
+      - name: warehouse_id
+        data_tests:
+          - not_null
+  - name: brz_farms
+    description: "Bronze copy of raw.farms. Supplier farms that AgriFresh buys produce from."
+    columns:
+      - name: farm_id
+        data_tests:
+          - not_null
+  - name: brz_products
+    description: "Bronze copy of raw.products. Product master (SKU, cost, list price)."
+    columns:
+      - name: product_id
+        data_tests:
+          - not_null
+  - name: brz_employees
+    description: "Bronze copy of raw.employees. Sales team; manager_id self-references employee_id."
+    columns:
+      - name: employee_id
+        data_tests:
+          - not_null
+  - name: brz_customers
+    description: "Bronze copy of raw.customers. B2B customers. Contains multiple versions per customer_id (CDC style, ordered by updated_at)."
+    columns:
+      - name: customer_id
+        data_tests:
+          - not_null
+  - name: brz_fx_rates
+    description: "Bronze copy of raw.fx_rates. Monthly FX rates to USD."
+    columns:
+      - name: rate_month
+        data_tests:
+          - not_null
+  - name: brz_purchase_orders
+    description: "Bronze copy of raw.purchase_orders. Produce received from farms into warehouses."
+    columns:
+      - name: purchase_order_id
+        data_tests:
+          - not_null
+  - name: brz_sales_orders
+    description: "Bronze copy of raw.sales_orders. Sales order header."
+    columns:
+      - name: order_id
+        data_tests:
+          - not_null
+  - name: brz_sales_order_lines
+    description: "Bronze copy of raw.sales_order_lines. Sales order line items."
+    columns:
+      - name: order_line_id
+        data_tests:
+          - not_null
+  - name: brz_shipments
+    description: "Bronze copy of raw.shipments. One shipment per shipped sales order."
+    columns:
+      - name: shipment_id
+        data_tests:
+          - not_null
+  - name: brz_payments
+    description: "Bronze copy of raw.payments. Customer payments against sales orders."
+    columns:
+      - name: payment_id
+        data_tests:
+          - not_null

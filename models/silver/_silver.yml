@@ -1,0 +1,320 @@
+version: 2
+
+models:
+  # ------------------------------------------------------------------ dimensions
+  - name: slv_regions
+    description: Operating regions, one row per region.
+    columns:
+      - name: region_id
+        data_tests: [unique, not_null]
+      - name: region_code
+        data_tests: [unique, not_null]
+      - name: currency_code
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ["EGP", "SAR", "AED"]
+
+  - name: slv_product_categories
+    description: Product categories; parent_category_id converted from '1.0' text to integer.
+    columns:
+      - name: category_id
+        data_tests: [unique, not_null]
+      - name: category_code
+        data_tests: [unique, not_null]
+      - name: parent_category_id
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('slv_product_categories')
+                field: category_id
+
+  - name: slv_warehouses
+    description: Distribution centres.
+    columns:
+      - name: warehouse_id
+        data_tests: [unique, not_null]
+      - name: region_id
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('slv_regions')
+                field: region_id
+      - name: is_cold_storage
+        data_tests: [not_null]
+
+  - name: slv_farms
+    description: Supplier farms. 'None' certification text converted to NULL.
+    columns:
+      - name: farm_id
+        data_tests: [unique, not_null]
+      - name: region_id
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('slv_regions')
+                field: region_id
+      - name: certification
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ["GlobalG.A.P.", "Organic EU"]
+
+  - name: slv_products
+    description: Product master with trimmed / proper-cased names and unit margin.
+    columns:
+      - name: product_id
+        data_tests: [unique, not_null]
+      - name: sku
+        data_tests: [unique, not_null]
+      - name: product_name
+        data_tests: [not_null]
+      - name: category_id
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('slv_product_categories')
+                field: category_id
+      - name: unit_of_measure
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ["KG", "BUNCH", "HEAD"]
+      - name: standard_cost_usd
+        data_tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              arguments:
+                expression: "> 0"
+      - name: list_price_usd
+        data_tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              arguments:
+                expression: ">= standard_cost_usd"
+
+  - name: slv_employees
+    description: Sales team.
+    columns:
+      - name: employee_id
+        data_tests: [unique, not_null]
+      - name: manager_id
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('slv_employees')
+                field: employee_id
+      - name: job_title
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ["Account Executive", "Regional Sales Manager"]
+
+  - name: slv_customers
+    description: Latest version of each customer (deduplicated on updated_at).
+    columns:
+      - name: customer_id
+        data_tests: [unique, not_null]
+      - name: customer_code
+        data_tests: [unique, not_null]
+      - name: segment
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ["Supermarket", "Hypermarket", "Restaurant", "Hotel", "Online Grocer", "Wholesaler"]
+      - name: region_id
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('slv_regions')
+                field: region_id
+      - name: account_manager_id
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('slv_employees')
+                field: employee_id
+
+  - name: slv_customers_history
+    description: SCD2 history of customers (valid_from / valid_to / is_current).
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [customer_id, valid_from]
+    columns:
+      - name: customer_version_key
+        data_tests: [unique, not_null]
+
+  - name: slv_fx_rates
+    description: Monthly FX to USD; identity rates (USD->USD) forced to 1.
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [rate_month, from_currency, to_currency]
+    columns:
+      - name: rate
+        data_tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              arguments:
+                expression: "> 0"
+
+  # ------------------------------------------------------------------ facts
+  - name: slv_purchase_orders
+    description: Farm receipts with accepted quantity, reject rate and cost.
+    data_tests:
+      - dbt_utils.expression_is_true:
+          arguments:
+            expression: "quantity_rejected <= quantity_received"
+      - dbt_utils.expression_is_true:
+          arguments:
+            expression: "received_date >= harvest_date"
+    columns:
+      - name: purchase_order_id
+        data_tests: [unique, not_null]
+      - name: farm_id
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('slv_farms')
+                field: farm_id
+      - name: product_id
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('slv_products')
+                field: product_id
+      - name: warehouse_id
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('slv_warehouses')
+                field: warehouse_id
+      - name: quality_grade
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ["A", "B", "C"]
+
+  - name: slv_sales_orders
+    description: Sales order header.
+    data_tests:
+      - dbt_utils.expression_is_true:
+          arguments:
+            expression: "requested_delivery_date >= order_date"
+    columns:
+      - name: order_id
+        data_tests: [unique, not_null]
+      - name: order_number
+        data_tests: [unique, not_null]
+      - name: customer_id
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('slv_customers')
+                field: customer_id
+      - name: sales_rep_id
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('slv_employees')
+                field: employee_id
+      - name: warehouse_id
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('slv_warehouses')
+                field: warehouse_id
+      - name: order_status
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ["PENDING", "SHIPPED", "DELIVERED", "CANCELLED", "RETURNED"]
+      - name: currency_code
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ["EGP", "SAR", "AED"]
+      - name: channel
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ["B2B Portal", "Sales Rep", "EDI", "Phone"]
+
+  - name: slv_sales_order_lines
+    description: Order lines with gross / discount / net amounts. Orphan product lines removed.
+    columns:
+      - name: order_line_id
+        data_tests: [unique, not_null]
+      - name: order_id
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('slv_sales_orders')
+                field: order_id
+      - name: product_id
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('slv_products')
+                field: product_id
+      - name: discount_pct
+        data_tests:
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 0
+                max_value: 1
+      - name: quantity
+        data_tests:
+          # warn only: negative quantities are a known source issue, flagged in is_negative_quantity
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 0
+                inclusive: false
+              config:
+                severity: warn
+
+  - name: slv_shipments
+    description: One shipment per order, with transit time and on-time flag.
+    columns:
+      - name: shipment_id
+        data_tests: [unique, not_null]
+      - name: order_id
+        data_tests:
+          - unique
+          - relationships:
+              arguments:
+                to: ref('slv_sales_orders')
+                field: order_id
+      - name: carrier
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ["DHL", "Aramex", "SMSA", "Bosta", "Own Fleet"]
+
+  - name: slv_payments
+    description: Payments, with refund and future-date flags.
+    columns:
+      - name: payment_id
+        data_tests: [unique, not_null]
+      - name: order_id
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('slv_sales_orders')
+                field: order_id
+      - name: payment_method
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ["Bank Transfer", "Card", "Cash", "Cheque"]
+      - name: amount_usd
+        data_tests:
+          - not_null

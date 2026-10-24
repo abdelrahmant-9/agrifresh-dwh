@@ -1,0 +1,6 @@
+warehouse_id,warehouse_code,warehouse_name,region_id,capacity_tonnes,is_cold_storage
+1,WH-CAI-01,Cairo 6th of October DC,1,4500,Y
+2,WH-ALX-01,Alexandria Borg El Arab DC,2,3000,Y
+3,WH-RIY-01,Riyadh Second Industrial DC,4,5200,Y
+4,WH-JED-01,Jeddah Al Khumrah DC,5,3800,Y
+5,WH-DXB-01,Dubai Al Quoz DC,6,2600,Y
